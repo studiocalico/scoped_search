@@ -20,7 +20,7 @@ module ScopedSearch::RSpec::Database
 
     @database_connections ||= YAML.load(File.read(file))
   end
-  
+
   def self.test_databases
     database_names = test_databases_configuration.keys.sort
     if ENV['EXCLUDE_DATABASE'].present?
@@ -43,12 +43,30 @@ module ScopedSearch::RSpec::Database
     ActiveRecord::Base.remove_connection
   end
 
+  DATABASE_TYPES = {
+    case_sensitive_string: {
+      'PostgreSQL' => 'text',
+      'Mysql2' => 'VARCHAR(255) COLLATE utf8_bin',
+      'Default' => :string,
+    },
+    case_insensitive_string: {
+      'PostgreSQL' => 'citext',
+      'Mysql2' => 'VARCHAR(255) COLLATE utf8_unicode_ci',
+      'Default' => :string,
+    }
+  }
+
+  def self.database_type(type)
+    return type unless DATABASE_TYPES.has_key?(type)
+    DATABASE_TYPES[type][ActiveRecord::Base.connection.adapter_name] || DATABASE_TYPES[type]['Default']
+  end
+
   def self.create_model(fields)
     table_name = "model_#{rand}".gsub(/\W/, '')
     ActiveRecord::Migration.create_table(table_name) do |t|
       fields.each do |name, field_type|
         options = (field_type == :decimal) ? { :scale => 2, :precision => 10 } : {}
-        t.send(field_type.to_s.gsub(/^unindexed_/, '').to_sym, name, options)
+        t.column(name, database_type(field_type), options)
       end
     end
 

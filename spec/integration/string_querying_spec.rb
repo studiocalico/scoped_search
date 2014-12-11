@@ -10,9 +10,9 @@ ScopedSearch::RSpec::Database.test_databases.each do |db|
       ScopedSearch::RSpec::Database.establish_named_connection(db)
 
       @class = ScopedSearch::RSpec::Database.create_model(
-          :string => :string,
+          :string => :case_insensitive_string,
           :another => :string,
-          :explicit => :string,
+          :explicit => :case_sensitive_string,
           :description => :string
           ) do |klass|
         klass.scoped_search :on => :string
@@ -89,11 +89,11 @@ ScopedSearch::RSpec::Database.test_databases.each do |db|
       end
 
       it "should not find records without case sensitivity when using the = operator" do
-        @class.search_for('string = FOO').length.should == 0
+        @class.search_for('explicit = BAZ').length.should == 0
       end
 
       it "should find records without case sensitivity when using the != operator" do
-        @class.search_for('string != FOO').length.should == 3
+        @class.search_for('explicit != BAZ').length.should == 2
       end
 
       it "should find records without case sensitivity when using the NOT LIKE operator" do

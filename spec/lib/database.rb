@@ -45,12 +45,10 @@ module ScopedSearch::RSpec::Database
 
   DATABASE_TYPES = {
     case_sensitive_string: {
-      'PostgreSQL' => 'text',
       'Mysql2' => 'VARCHAR(255) COLLATE utf8_bin',
       'Default' => :string,
     },
     case_insensitive_string: {
-      'PostgreSQL' => 'citext',
       'Mysql2' => 'VARCHAR(255) COLLATE utf8_unicode_ci',
       'Default' => :string,
     }
